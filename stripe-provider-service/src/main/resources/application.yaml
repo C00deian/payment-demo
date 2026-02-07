@@ -6,6 +6,8 @@ spring:
     name: stripe-provider-service
 
 stripe:
+  secret:
+    key: sk_test_51RSdyRHIhRWylB8yeuOkRULSXBueqytYeqOpKqOU8WSE8nYsVD9jC41mkFQ4cN69EmHIDoXelJPS947MtDMASu6b00YlahGxUX
   webhook:
     secret: whsec_896ff8c67dec0675751c4f823a12e5bd90de733da589a13a8a08da645c6f56d9
 

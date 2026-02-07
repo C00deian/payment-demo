@@ -22,6 +22,7 @@ public class PaymentService {
 
         Payment payment = new Payment();
         payment.setPaymentId(UUID.randomUUID().toString());
+        payment.setOrderId(req.getOrderId());
         payment.setAmount(req.getAmount());
         payment.setCurrency(req.getCurrency());
         payment.setStatus(PaymentStatus.CREATED);

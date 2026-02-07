@@ -1,5 +1,6 @@
 package com.payment.payment_integration_service.service;
 
+import com.payment.payment_integration_service.exception.PaymentNotFoundException;
 import com.payment.payment_integration_service.model.Payment;
 import com.payment.payment_integration_service.model.PaymentStatus;
 import com.payment.payment_integration_service.repository.PaymentRepository;
@@ -20,7 +21,7 @@ public class PaymentStatusService {
 
         Payment payment = repo.findByPaymentId(paymentId)
                 .orElseThrow(() ->
-                        new IllegalStateException("Payment not found: " + paymentId)
+                        new PaymentNotFoundException(paymentId)
                 );
 
         // 🔁 Idempotency
@@ -37,7 +38,7 @@ public class PaymentStatusService {
 
         Payment payment = repo.findByPaymentId(paymentId)
                 .orElseThrow(() ->
-                        new IllegalStateException("Payment not found: " + paymentId)
+                        new PaymentNotFoundException(paymentId)
                 );
 
         if (payment.getStatus() == PaymentStatus.FAILED) {

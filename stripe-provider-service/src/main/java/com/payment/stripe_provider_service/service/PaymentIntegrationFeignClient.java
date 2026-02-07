@@ -1,9 +1,8 @@
 package com.payment.stripe_provider_service.service;
 
-import com.payment.stripe_provider_service.dto.WebhookUpdateRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(
         name = "payment-integration-service",
@@ -11,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 public interface PaymentIntegrationFeignClient {
 
-    @PostMapping("/internal/payments/success")
-    void markSuccess(@RequestBody WebhookUpdateRequest request);
+    @PostMapping("/internal/payments/{paymentId}/success")
+    void markSuccess(@PathVariable("paymentId") String paymentId);
 
-    @PostMapping("/internal/payments/failed")
-    void markFailed(@RequestBody WebhookUpdateRequest request);
+    @PostMapping("/internal/payments/{paymentId}/failed")
+    void markFailed(@PathVariable("paymentId") String paymentId);
 }
