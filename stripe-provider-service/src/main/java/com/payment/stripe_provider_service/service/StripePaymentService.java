@@ -8,6 +8,9 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Service
 public class StripePaymentService {
 
@@ -22,8 +25,13 @@ public class StripePaymentService {
             }
             Stripe.apiKey = stripeSecretKey;
 
-            String successUrl = firstNonBlank(req.getSuccessUrl(), "http://localhost:3000/success");
-            String cancelUrl = firstNonBlank(req.getFailureUrl(), "http://localhost:3000/cancel");
+            String successUrl = firstNonBlank(req.getSuccessUrl(), "http://localhost:5173/success");
+            String cancelUrl = firstNonBlank(req.getFailureUrl(), "http://localhost:5173/cancel");
+
+            String paymentId = req.getPaymentId();
+            successUrl = appendQueryParam(successUrl, "paymentId", paymentId);
+            successUrl = appendQueryParam(successUrl, "session_id", "{CHECKOUT_SESSION_ID}");
+            cancelUrl = appendQueryParam(cancelUrl, "paymentId", paymentId);
 
             SessionCreateParams params =
                     SessionCreateParams.builder()
@@ -79,5 +87,18 @@ public class StripePaymentService {
             if (!trimmed.isEmpty()) return trimmed;
         }
         return null;
+    }
+
+    private static String appendQueryParam(String url, String key, String value) {
+        if (url == null || url.isBlank() || key == null || key.isBlank() || value == null || value.isBlank()) {
+            return url;
+        }
+
+        String encodedValue = "session_id".equals(key)
+                ? value
+                : URLEncoder.encode(value, StandardCharsets.UTF_8);
+
+        String separator = url.contains("?") ? "&" : "?";
+        return url + separator + key + "=" + encodedValue;
     }
 }
