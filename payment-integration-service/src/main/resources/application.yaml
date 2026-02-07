@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: payment-integration-service
+
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/payment_db?createDatabaseIfNotExist=true
+    username: root
+    password: root!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+provider:
+  stripe:
+    base-url: http://localhost:8082
+#  paypal:
+#    base-url: http://localhost:8083
