@@ -4,5 +4,7 @@ import lombok.Data;
 
 @Data
 public class CheckoutResponse {
+    private String paymentId;
     private String redirectUrl;
+    private String status;
 }

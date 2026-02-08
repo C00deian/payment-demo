@@ -2,6 +2,7 @@ package com.payment.payment_integration_service.controller;
 
 import com.payment.payment_integration_service.dto.StripeWebhookUpdateRequest;
 import com.payment.payment_integration_service.service.StripeWebhookUpdateService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,13 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/internal/webhooks")
+@RequiredArgsConstructor
 public class InternalStripeWebhookController {
 
     private final StripeWebhookUpdateService service;
-
-    public InternalStripeWebhookController(StripeWebhookUpdateService service) {
-        this.service = service;
-    }
 
     @PostMapping("/stripe")
     public ResponseEntity<Void> stripe(@RequestBody StripeWebhookUpdateRequest request) {
@@ -24,4 +22,3 @@ public class InternalStripeWebhookController {
         return ResponseEntity.ok().build();
     }
 }
-

@@ -3,37 +3,22 @@ package com.payment.merchant_service.service;
 import com.payment.merchant_service.client.PaymentIntegrationClient;
 import com.payment.merchant_service.dto.CheckoutRequest;
 import com.payment.merchant_service.dto.CheckoutResponse;
-import com.payment.merchant_service.dto.PaymentRequest;
 import com.payment.merchant_service.dto.PaymentResponse;
+import com.payment.merchant_service.mapper.CheckoutMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CheckoutService {
 
-    public PaymentRequest mapToPaymentRequest(CheckoutRequest request) {
-        return PaymentRequest.builder()
-                .amount(request.getAmount())
-                .currency(request.getCurrency())
-                .orderId(request.getOrderId())
-                .paymentProvider(request.getPaymentProvider())
-                .build();
-    }
-
     private final PaymentIntegrationClient paymentClient;
-
-    public CheckoutService(PaymentIntegrationClient paymentClient) {
-        this.paymentClient = paymentClient;
-    }
+    private final CheckoutMapper mapper;
 
     public CheckoutResponse checkout(CheckoutRequest request) {
+        var paymentResponse =
+                paymentClient.createPayment(mapper.toPaymentRequest(request));
 
-        PaymentRequest paymentRequest = mapToPaymentRequest(request);
-
-        PaymentResponse paymentResponse =
-                paymentClient.createPayment(paymentRequest);
-
-        CheckoutResponse response = new CheckoutResponse();
-        response.setRedirectUrl(paymentResponse.getRedirectUrl());
-        return response;
+        return mapper.toCheckoutResponse(paymentResponse);
     }
 }

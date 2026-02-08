@@ -8,22 +8,19 @@ import com.payment.payment_integration_service.model.PaymentWebhookEvent;
 import com.payment.payment_integration_service.model.WebhookStatusUpdate;
 import com.payment.payment_integration_service.repository.PaymentRepository;
 import com.payment.payment_integration_service.repository.PaymentWebhookEventRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class StripeWebhookUpdateService {
 
     private static final String PROVIDER = "STRIPE";
 
     private final PaymentWebhookEventRepository eventRepository;
     private final PaymentRepository paymentRepository;
-
-    public StripeWebhookUpdateService(PaymentWebhookEventRepository eventRepository, PaymentRepository paymentRepository) {
-        this.eventRepository = eventRepository;
-        this.paymentRepository = paymentRepository;
-    }
 
     @Transactional
     public void apply(StripeWebhookUpdateRequest request) {
@@ -97,4 +94,3 @@ public class StripeWebhookUpdateService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 }
-

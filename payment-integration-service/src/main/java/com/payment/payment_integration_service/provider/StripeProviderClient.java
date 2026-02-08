@@ -1,19 +1,18 @@
 package com.payment.payment_integration_service.provider;
 
-import com.payment.payment_integration_service.client.stripe.StripeCreatePaymentClientRequest;
 import com.payment.payment_integration_service.client.stripe.StripePaymentClientResponse;
 import com.payment.payment_integration_service.client.stripe.StripeProviderFeignClient;
+import com.payment.payment_integration_service.mapper.StripeClientMapper;
 import com.payment.payment_integration_service.model.Payment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class StripeProviderClient implements PaymentProvider {
 
     private final StripeProviderFeignClient stripeClient;
-
-    public StripeProviderClient(StripeProviderFeignClient stripeClient) {
-        this.stripeClient = stripeClient;
-    }
+    private final StripeClientMapper mapper;
 
 
     @Override
@@ -24,20 +23,9 @@ public class StripeProviderClient implements PaymentProvider {
 
     @Override
     public PaymentInitiationResult initiatePayment(Payment payment) {
-
-        StripeCreatePaymentClientRequest req =
-                new StripeCreatePaymentClientRequest();
-
-        req.setPaymentId(payment.getPaymentId());
-        req.setAmount(payment.getAmount());
-        req.setCurrency(payment.getCurrency());
-
         StripePaymentClientResponse resp =
-                stripeClient.createPayment(req);
+                stripeClient.createPayment(mapper.toCreateRequest(payment));
 
-        PaymentInitiationResult result = new PaymentInitiationResult();
-        result.setRedirectUrl(resp.getCheckoutUrl());
-        result.setProviderSessionId(resp.getStripeSessionId());
-        return result;
+        return mapper.toInitiationResult(resp);
     }
 }

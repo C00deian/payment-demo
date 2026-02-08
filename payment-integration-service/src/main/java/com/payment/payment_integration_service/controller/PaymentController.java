@@ -5,6 +5,7 @@ import com.payment.payment_integration_service.dto.PaymentRequest;
 import com.payment.payment_integration_service.dto.PaymentResponse;
 import com.payment.payment_integration_service.service.PaymentQueryService;
 import com.payment.payment_integration_service.service.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,15 +17,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/payments")
+@RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService service;
     private final PaymentQueryService queryService;
-
-    public PaymentController(PaymentService service, PaymentQueryService queryService) {
-        this.service = service;
-        this.queryService = queryService;
-    }
 
     @PostMapping
     public PaymentResponse create(@RequestBody PaymentRequest request) {
