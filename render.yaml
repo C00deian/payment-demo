@@ -1,15 +1,17 @@
 services:
+  # MySQL (PRIVATE SERVICE)
   - type: pserv
     name: mysql
     env: docker
     plan: free
-    dockerImage: mysql:8.4
+    dockerfilePath: mysql/Dockerfile
     envVars:
       - key: MYSQL_ROOT_PASSWORD
         sync: false
       - key: MYSQL_DATABASE
         sync: false
 
+  # Merchant Service
   - type: web
     name: merchant-service
     env: docker
@@ -19,7 +21,10 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: docker
+      - key: DB_HOST
+        value: mysql
 
+  # Payment Integration Service
   - type: web
     name: payment-integration-service
     env: docker
@@ -29,7 +34,10 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: docker
+      - key: DB_HOST
+        value: mysql
 
+  # Stripe Provider Service
   - type: web
     name: stripe-provider-service
     env: docker
