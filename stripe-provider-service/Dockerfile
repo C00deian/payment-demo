@@ -5,7 +5,8 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 COPY src/ src/
 
-RUN ./mvnw -q -DskipTests package \
+RUN chmod +x mvnw \
+  && ./mvnw -q -DskipTests package \
   && JAR_FILE="$(ls target/*.jar | grep -v '\\.original$' | head -n 1)" \
   && cp "$JAR_FILE" /tmp/app.jar
 
@@ -17,4 +18,3 @@ EXPOSE 8082
 ENV JAVA_OPTS=""
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
 ENV SPRING_PROFILES_ACTIVE=docker
-
