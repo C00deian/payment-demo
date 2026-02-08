@@ -1,49 +1,50 @@
 services:
-  # MySQL (PRIVATE SERVICE)
-  - type: pserv
-    name: mysql
-    env: docker
-    plan: free
-    dockerfilePath: mysql/Dockerfile
-    envVars:
-      - key: MYSQL_ROOT_PASSWORD
-        sync: false
-      - key: MYSQL_DATABASE
-        sync: false
-
   # Merchant Service
   - type: web
     name: merchant-service
     env: docker
     plan: free
-    dockerfilePath: merchant-service/Dockerfile
+    dockerfilePath: ./merchant-service/Dockerfile
     autoDeploy: true
+    healthCheckPath: /health
     envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: docker
-      - key: DB_HOST
-        value: mysql
+      - key: PAYMENT_INTEGRATION_BASE_URL
+        sync: false
 
   # Payment Integration Service
   - type: web
     name: payment-integration-service
     env: docker
     plan: free
-    dockerfilePath: payment-integration-service/Dockerfile
+    dockerfilePath: ./payment-integration-service/Dockerfile
     autoDeploy: true
+    healthCheckPath: /health
     envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: docker
-      - key: DB_HOST
-        value: mysql
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: PROVIDER_STRIPE_BASE_URL
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false
 
   # Stripe Provider Service
   - type: web
     name: stripe-provider-service
     env: docker
     plan: free
-    dockerfilePath: stripe-provider-service/Dockerfile
+    dockerfilePath: ./stripe-provider-service/Dockerfile
     autoDeploy: true
+    healthCheckPath: /health
     envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: docker
+      - key: PAYMENT_INTEGRATION_BASE_URL
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
