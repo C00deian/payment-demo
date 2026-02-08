@@ -88,6 +88,40 @@ cd stripe-provider-service && ./mvnw spring-boot:run
 cd merchant-service && ./mvnw spring-boot:run
 ```
 
+## Deploy (Docker Compose)
+
+### 1) Create env file
+
+```bash
+cp deploy.env.example .env
+```
+
+Fill `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in `.env`.
+
+### 2) Start everything
+
+```bash
+docker compose up --build
+```
+
+### 3) Stripe webhook (local)
+
+In another terminal (host machine):
+```bash
+stripe listen --forward-to http://localhost:8082/webhooks/stripe
+```
+
+Services:
+- Merchant: `http://localhost:8080`
+- Integration: `http://localhost:8081`
+- Stripe Provider: `http://localhost:8082`
+- MySQL: `localhost:3306`
+
+To stop:
+```bash
+docker compose down
+```
+
 ### 4) Start the React UI
 
 ```bash
@@ -146,4 +180,3 @@ Make sure services are restarted after code changes. CORS is configured to allow
 ### 401 on internal calls
 Internal endpoints require `X-Internal-Api-Key`. Ensure:
 - `INTERNAL_API_KEY` is set to the same value in both services
-

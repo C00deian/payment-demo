@@ -7,4 +7,4 @@ spring:
 
 payment:
   integration:
-    base-url: http://localhost:8081
+    base-url: ${PAYMENT_INTEGRATION_BASE_URL:http://localhost:8081}
