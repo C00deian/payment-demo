@@ -5,6 +5,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./merchant-service/Dockerfile
+    dockerContext: ./merchant-service
     autoDeploy: true
     healthCheckPath: /health
     envVars:
@@ -17,6 +18,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./payment-integration-service/Dockerfile
+    dockerContext: ./payment-integration-service
     autoDeploy: true
     healthCheckPath: /health
     envVars:
@@ -37,6 +39,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./stripe-provider-service/Dockerfile
+    dockerContext: ./stripe-provider-service
     autoDeploy: true
     healthCheckPath: /health
     envVars:
