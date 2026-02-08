@@ -20,7 +20,7 @@ flowchart TD
   E -->|Redirect back to UI| A
   E -->|Webhook| D
   D -->|Feign POST /internal/webhooks/stripe| C
-  C -->|Update status| F[(MySQL)]
+  C -->|Update status| F[(PostgreSQL)]
 ```
 
 ### Why webhook?
@@ -37,7 +37,7 @@ Stripe (and most providers) confirm the final result asynchronously. The UI redi
 
 - Java 17
 - Node.js 18+ (recommended)
-- MySQL 8 (local) **or** Docker
+- PostgreSQL 16+ (local) **or** Docker
 - Stripe account (test mode) + Stripe CLI
 
 ## Configuration (Environment Variables)
@@ -50,14 +50,14 @@ These are used by multiple services:
 
 ## Quick Start (Local)
 
-### 1) Start MySQL
+### 1) Start PostgreSQL
 
-Option A: local MySQL
+Option A: local PostgreSQL
 - Create DB user matching `payment-integration-service/src/main/resources/application.yaml`
 
 Option B: Docker
 ```bash
-docker run --name payment-mysql -e MYSQL_ROOT_PASSWORD=root! -e MYSQL_DATABASE=payment_db -p 3306:3306 -d mysql:8
+docker run --name payment-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=payment_db -p 5432:5432 -d postgres:16
 ```
 
 ### 2) Start Stripe webhook forwarding
@@ -115,7 +115,7 @@ Services:
 - Merchant: `http://localhost:8080`
 - Integration: `http://localhost:8081`
 - Stripe Provider: `http://localhost:8082`
-- MySQL: `localhost:3306`
+- PostgreSQL: `localhost:5432`
 
 To stop:
 ```bash

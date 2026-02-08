@@ -41,7 +41,6 @@ Receives webhook updates (event id + status) from Stripe Provider and updates th
 ## Config
 
 `payment-integration-service/src/main/resources/application.yaml`
-- `spring.datasource.*` → MySQL connection
+- `spring.datasource.*` → PostgreSQL connection
 - `provider.stripe.base-url` → defaults to `http://localhost:8082`
 - `internal.api.key` → defaults to `dev-internal-key` (override with `INTERNAL_API_KEY`)
-

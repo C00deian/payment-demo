@@ -13,6 +13,7 @@ services:
         sync: false
 
   # Payment Integration Service (ONLY service that needs DB)
+  # Provide Postgres via Render (DATABASE_URL) or set SPRING_DATASOURCE_* manually.
   - type: web
     name: payment-integration-service
     env: docker
@@ -22,16 +23,6 @@ services:
     autoDeploy: true
     healthCheckPath: /health
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: SPRING_JPA_DATABASE_PLATFORM
-        value: org.hibernate.dialect.PostgreSQLDialect
-      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
-        value: update
       - key: PROVIDER_STRIPE_BASE_URL
         sync: false
       - key: INTERNAL_API_KEY
@@ -55,9 +46,3 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-
-databases:
-  - name: payment-db
-    databaseName: payment_db
-    user: payment_user
-    plan: free
