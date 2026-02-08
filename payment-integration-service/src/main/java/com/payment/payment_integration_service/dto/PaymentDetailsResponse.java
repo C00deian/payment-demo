@@ -10,6 +10,7 @@ public class PaymentDetailsResponse {
     private Long amount;
     private String currency;
     private String provider;
+    private String providerSessionId;
+    private String providerPaymentIntentId;
     private PaymentStatus status;
 }
-

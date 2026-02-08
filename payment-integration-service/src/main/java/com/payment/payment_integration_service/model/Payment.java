@@ -2,6 +2,10 @@ package com.payment.payment_integration_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.Instant;
 
 @Data
 @Entity
@@ -12,6 +16,9 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
 
     // 🔹 Business reference (used across services)
     @Column(nullable = false, unique = true)
@@ -32,4 +39,16 @@ public class Payment {
 
     @Column(nullable = false)
     private String provider;
+
+    // Provider references (useful for reconciliation/audit)
+    private String providerSessionId;
+    private String providerPaymentIntentId;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column
+    private Instant updatedAt;
 }

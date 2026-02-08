@@ -3,7 +3,6 @@ package com.payment.payment_integration_service.provider;
 import com.payment.payment_integration_service.client.stripe.StripeCreatePaymentClientRequest;
 import com.payment.payment_integration_service.client.stripe.StripePaymentClientResponse;
 import com.payment.payment_integration_service.client.stripe.StripeProviderFeignClient;
-import com.payment.payment_integration_service.dto.PaymentResponse;
 import com.payment.payment_integration_service.model.Payment;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class StripeProviderClient implements PaymentProvider {
 
 
     @Override
-    public PaymentResponse createPayment(Payment payment) {
+    public PaymentInitiationResult initiatePayment(Payment payment) {
 
         StripeCreatePaymentClientRequest req =
                 new StripeCreatePaymentClientRequest();
@@ -36,11 +35,9 @@ public class StripeProviderClient implements PaymentProvider {
         StripePaymentClientResponse resp =
                 stripeClient.createPayment(req);
 
-        PaymentResponse response = new PaymentResponse();
-        response.setPaymentId(payment.getPaymentId());
-        response.setRedirectUrl(resp.getCheckoutUrl());
-        response.setStatus("CREATED");
-
-        return response;
+        PaymentInitiationResult result = new PaymentInitiationResult();
+        result.setRedirectUrl(resp.getCheckoutUrl());
+        result.setProviderSessionId(resp.getStripeSessionId());
+        return result;
     }
 }

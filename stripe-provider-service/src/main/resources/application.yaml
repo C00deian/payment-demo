@@ -14,3 +14,7 @@ stripe:
 payment:
   integration:
     base-url: http://localhost:8081
+
+internal:
+  api:
+    key: ${INTERNAL_API_KEY:dev-internal-key}

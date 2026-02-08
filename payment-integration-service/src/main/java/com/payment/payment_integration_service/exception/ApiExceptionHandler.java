@@ -22,5 +22,25 @@ public class ApiExceptionHandler {
         body.put("paymentId", ex.getPaymentId());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
-}
 
+    @ExceptionHandler(UnsupportedProviderException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupportedProvider(UnsupportedProviderException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "UNSUPPORTED_PROVIDER");
+        body.put("message", ex.getMessage());
+        body.put("provider", ex.getProvider());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "BAD_REQUEST");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+}

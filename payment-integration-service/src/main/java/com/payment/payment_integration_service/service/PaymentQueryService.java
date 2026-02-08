@@ -37,8 +37,9 @@ public class PaymentQueryService {
         response.setAmount(payment.getAmount());
         response.setCurrency(payment.getCurrency());
         response.setProvider(payment.getProvider());
+        response.setProviderSessionId(payment.getProviderSessionId());
+        response.setProviderPaymentIntentId(payment.getProviderPaymentIntentId());
         response.setStatus(payment.getStatus());
         return response;
     }
 }
-

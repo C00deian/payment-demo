@@ -2,10 +2,9 @@ package com.payment.stripe_provider_service.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payment.stripe_provider_service.dto.StripeWebhookUpdateRequest;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
-import com.stripe.model.PaymentIntent;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import feign.FeignException;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Map;
 
 @Service
 public class StripeWebhookService {
@@ -42,87 +40,19 @@ public class StripeWebhookService {
         String type = event.getType();
         String eventId = event.getId();
 
-        Object stripeObject = event.getDataObjectDeserializer()
-                .getObject()
-                .orElse(null);
-
-        if ("checkout.session.completed".equals(type)) {
-            if (!(stripeObject instanceof Session session)) {
-                String paymentId = extractPaymentIdFromPayload(payload, type);
-                if (paymentId == null) {
-                    log.warn("Stripe webhook received {} (eventId={}) but could not deserialize/extract checkout session", type, eventId);
-                    return;
-                }
-                markSuccess(paymentId, type);
-                return;
-            }
-            handleCheckoutSessionCompleted(session, type);
+        StripeWebhookUpdateRequest update = buildUpdateRequest(payload, eventId, type);
+        if (update == null) {
             return;
         }
 
-        if ("payment_intent.succeeded".equals(type) || "payment_intent.payment_failed".equals(type)) {
-            if (!(stripeObject instanceof PaymentIntent intent)) {
-                String paymentId = extractPaymentIdFromPayload(payload, type);
-                if (paymentId == null) {
-                    log.warn("Stripe webhook received {} (eventId={}) but could not deserialize/extract payment intent", type, eventId);
-                    return;
-                }
-                if ("payment_intent.succeeded".equals(type)) {
-                    markSuccess(paymentId, type);
-                } else {
-                    markFailed(paymentId, type);
-                }
-                return;
-            }
-            handlePaymentIntent(intent, type);
+        try {
+            client.stripeWebhook(update);
+        } catch (FeignException.NotFound e) {
+            log.warn("Ignoring Stripe webhook {} for unknown paymentId={}", type, update.getPaymentId());
         }
     }
 
-    private void handleCheckoutSessionCompleted(Session session, String type) {
-        if (session == null) {
-            log.warn("Stripe webhook received {} but session was null", type);
-            return;
-        }
-
-        String paymentStatus = session.getPaymentStatus();
-        if (paymentStatus != null && !"paid".equals(paymentStatus)) {
-            log.warn("Stripe webhook received {} but session paymentStatus={} (sessionId={})", type, paymentStatus, session.getId());
-            return;
-        }
-
-        String paymentId = firstNonBlank(
-                session.getClientReferenceId(),
-                getMetadataValue(session.getMetadata(), "paymentId")
-        );
-
-        if (paymentId == null) {
-            log.warn("Stripe webhook received {} but no paymentId/clientReferenceId found (sessionId={})", type, session.getId());
-            return;
-        }
-
-        markSuccess(paymentId, type);
-    }
-
-    private void handlePaymentIntent(PaymentIntent intent, String type) {
-        if (intent == null) {
-            log.warn("Stripe webhook received {} but payment intent was null", type);
-            return;
-        }
-
-        String paymentId = getMetadataValue(intent.getMetadata(), "paymentId");
-        if (paymentId == null) {
-            log.warn("Stripe webhook received {} but metadata.paymentId missing (paymentIntentId={})", type, intent.getId());
-            return;
-        }
-
-        if ("payment_intent.succeeded".equals(type)) {
-            markSuccess(paymentId, type);
-        } else if ("payment_intent.payment_failed".equals(type)) {
-            markFailed(paymentId, type);
-        }
-    }
-
-    private String extractPaymentIdFromPayload(String payload, String type) {
+    private StripeWebhookUpdateRequest buildUpdateRequest(String payload, String eventId, String type) {
         try {
             JsonNode root = objectMapper.readTree(payload);
             JsonNode object = root.path("data").path("object");
@@ -130,16 +60,47 @@ public class StripeWebhookService {
             if ("checkout.session.completed".equals(type)) {
                 String paymentStatus = textOrNull(object.path("payment_status"));
                 if (paymentStatus != null && !"paid".equals(paymentStatus)) {
+                    log.info("Ignoring checkout.session.completed with payment_status={}", paymentStatus);
                     return null;
                 }
-                return firstNonBlank(
+
+                String paymentId = firstNonBlank(
                         textOrNull(object.path("client_reference_id")),
                         textOrNull(object.path("metadata").path("paymentId"))
                 );
+                if (paymentId == null) {
+                    log.warn("Stripe webhook {} missing paymentId (eventId={})", type, eventId);
+                    return null;
+                }
+
+                StripeWebhookUpdateRequest req = new StripeWebhookUpdateRequest();
+                req.setPaymentId(paymentId);
+                req.setStripeEventId(eventId);
+                req.setStripeEventType(type);
+                req.setStripeObjectId(textOrNull(object.path("id")));
+                req.setStripeSessionId(textOrNull(object.path("id")));
+                req.setStripePaymentIntentId(textOrNull(object.path("payment_intent")));
+                req.setStatus("SUCCESS");
+                return req;
             }
 
             if ("payment_intent.succeeded".equals(type) || "payment_intent.payment_failed".equals(type)) {
-                return textOrNull(object.path("metadata").path("paymentId"));
+                String paymentId = textOrNull(object.path("metadata").path("paymentId"));
+                if (paymentId == null) {
+                    log.warn("Stripe webhook {} missing metadata.paymentId (eventId={})", type, eventId);
+                    return null;
+                }
+
+                String status = "payment_intent.succeeded".equals(type) ? "SUCCESS" : "FAILED";
+
+                StripeWebhookUpdateRequest req = new StripeWebhookUpdateRequest();
+                req.setPaymentId(paymentId);
+                req.setStripeEventId(eventId);
+                req.setStripeEventType(type);
+                req.setStripeObjectId(textOrNull(object.path("id")));
+                req.setStripePaymentIntentId(textOrNull(object.path("id")));
+                req.setStatus(status);
+                return req;
             }
 
             return null;
@@ -147,30 +108,6 @@ public class StripeWebhookService {
             log.warn("Failed to parse Stripe webhook JSON for type={}", type, e);
             return null;
         }
-    }
-
-    private void markSuccess(String paymentId, String eventType) {
-        try {
-            client.markSuccess(paymentId);
-        } catch (FeignException.NotFound e) {
-            log.warn("Ignoring Stripe webhook {} for unknown paymentId={}", eventType, paymentId);
-        }
-    }
-
-    private void markFailed(String paymentId, String eventType) {
-        try {
-            client.markFailed(paymentId);
-        } catch (FeignException.NotFound e) {
-            log.warn("Ignoring Stripe webhook {} for unknown paymentId={}", eventType, paymentId);
-        }
-    }
-
-    private static String getMetadataValue(Map<String, String> metadata, String key) {
-        if (metadata == null) return null;
-        String value = metadata.get(key);
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static String textOrNull(JsonNode node) {

@@ -24,8 +24,8 @@ public class PaymentStatusService {
                         new PaymentNotFoundException(paymentId)
                 );
 
-        // 🔁 Idempotency
-        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+        // final-state guard + idempotency
+        if (payment.getStatus() == PaymentStatus.SUCCESS || payment.getStatus() == PaymentStatus.FAILED) {
             return;
         }
 
@@ -41,7 +41,7 @@ public class PaymentStatusService {
                         new PaymentNotFoundException(paymentId)
                 );
 
-        if (payment.getStatus() == PaymentStatus.FAILED) {
+        if (payment.getStatus() == PaymentStatus.FAILED || payment.getStatus() == PaymentStatus.SUCCESS) {
             return;
         }
 
