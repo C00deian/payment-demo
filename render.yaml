@@ -12,7 +12,7 @@ services:
       - key: PAYMENT_INTEGRATION_BASE_URL
         sync: false
 
-  # Payment Integration Service
+  # Payment Integration Service (ONLY service that needs DB)
   - type: web
     name: payment-integration-service
     env: docker
@@ -28,12 +28,16 @@ services:
         sync: false
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.PostgreSQLDialect
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
       - key: PROVIDER_STRIPE_BASE_URL
         sync: false
       - key: INTERNAL_API_KEY
         sync: false
 
-  # Stripe Provider Service
+  # Stripe Provider Service (NO DB)
   - type: web
     name: stripe-provider-service
     env: docker
@@ -51,3 +55,9 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+
+databases:
+  - name: payment-db
+    databaseName: payment_db
+    user: payment_user
+    plan: free
