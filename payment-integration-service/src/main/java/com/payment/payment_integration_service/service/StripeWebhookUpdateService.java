@@ -33,10 +33,6 @@ public class StripeWebhookUpdateService {
             throw new IllegalArgumentException("Missing required webhook fields");
         }
 
-        if (eventRepository.existsByProviderAndProviderEventId(PROVIDER, eventId)) {
-            return;
-        }
-
         WebhookStatusUpdate update = WebhookStatusUpdate.valueOf(status);
 
         PaymentWebhookEvent event = new PaymentWebhookEvent();
@@ -53,7 +49,7 @@ public class StripeWebhookUpdateService {
             return;
         }
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
         if (!PROVIDER.equals(payment.getProvider())) {

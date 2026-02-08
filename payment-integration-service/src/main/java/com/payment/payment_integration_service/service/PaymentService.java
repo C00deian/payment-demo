@@ -2,12 +2,14 @@ package com.payment.payment_integration_service.service;
 
 import com.payment.payment_integration_service.dto.PaymentRequest;
 import com.payment.payment_integration_service.dto.PaymentResponse;
+import com.payment.payment_integration_service.exception.PaymentNotFoundException;
 import com.payment.payment_integration_service.model.Payment;
 import com.payment.payment_integration_service.model.PaymentStatus;
 import com.payment.payment_integration_service.provider.PaymentProvider;
 import com.payment.payment_integration_service.provider.PaymentInitiationResult;
 import com.payment.payment_integration_service.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -51,16 +53,40 @@ public class PaymentService {
 
         PaymentInitiationResult result = provider.initiatePayment(payment);
 
-        payment.setStatus(PaymentStatus.PENDING);
-        payment.setProviderSessionId(result.getProviderSessionId());
-        repo.save(payment);
+        Payment updated = applyProviderInitiation(payment.getPaymentId(), result);
 
         PaymentResponse response = new PaymentResponse();
-        response.setPaymentId(payment.getPaymentId());
+        response.setPaymentId(updated.getPaymentId());
         response.setRedirectUrl(result.getRedirectUrl());
-        response.setStatus(payment.getStatus().name());
+        response.setStatus(updated.getStatus().name());
         return response;
     }
 
+    private Payment applyProviderInitiation(String paymentId, PaymentInitiationResult result) {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            Payment current = repo.findByPaymentId(paymentId)
+                    .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+
+            if (current.getStatus() != PaymentStatus.SUCCESS && current.getStatus() != PaymentStatus.FAILED) {
+                current.setStatus(PaymentStatus.PENDING);
+            }
+
+            if (current.getProviderSessionId() == null && result.getProviderSessionId() != null) {
+                current.setProviderSessionId(result.getProviderSessionId());
+            }
+
+            try {
+                return repo.save(current);
+            } catch (ObjectOptimisticLockingFailureException e) {
+                if (attempt == 1) {
+                    return repo.findByPaymentId(paymentId)
+                            .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+                }
+            }
+        }
+
+        return repo.findByPaymentId(paymentId)
+                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    }
 
 }
