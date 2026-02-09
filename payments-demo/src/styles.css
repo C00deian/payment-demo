@@ -1,0 +1,204 @@
+:root {
+  color-scheme: light;
+  --bg: #0b1020;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.68);
+  --danger: #ff5370;
+  --success: #3ddc97;
+  --warn: #ffd166;
+  --primary: #7c3aed;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(124, 58, 237, 0.35), transparent 55%),
+    radial-gradient(900px 700px at 80% 80%, rgba(61, 220, 151, 0.18), transparent 55%),
+    var(--bg);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.card {
+  width: min(760px, 100%);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+h1 {
+  margin: 0 0 8px 0;
+  font-size: 26px;
+  letter-spacing: 0.2px;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0 0 16px 0;
+}
+
+.small {
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 16px 0;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input,
+select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text);
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(124, 58, 237, 0.9);
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+button {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button.primary {
+  width: 100%;
+  border-color: rgba(124, 58, 237, 0.6);
+  background: rgba(124, 58, 237, 0.28);
+}
+
+button.secondary {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.error {
+  border: 1px solid rgba(255, 83, 112, 0.5);
+  background: rgba(255, 83, 112, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 12px 12px;
+  margin: 12px 0;
+  white-space: pre-wrap;
+}
+
+.details {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.24);
+  margin: 12px 0 16px 0;
+}
+
+.details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.k {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.v {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
+.badge.success {
+  border-color: rgba(61, 220, 151, 0.6);
+  background: rgba(61, 220, 151, 0.16);
+}
+
+.badge.failed {
+  border-color: rgba(255, 83, 112, 0.6);
+  background: rgba(255, 83, 112, 0.16);
+}
+
+.badge.created,
+.badge.pending,
+.badge.initiated {
+  border-color: rgba(255, 209, 102, 0.55);
+  background: rgba(255, 209, 102, 0.12);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.35);
+  padding-bottom: 2px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
