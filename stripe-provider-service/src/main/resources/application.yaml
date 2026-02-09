@@ -11,6 +11,10 @@ stripe:
   webhook:
     secret: ${STRIPE_WEBHOOK_SECRET:}
 
+payments:
+  ui:
+    base-url: ${PAYMENTS_UI_BASE_URL:http://localhost:5173}
+
 payment:
   integration:
     base-url: ${PAYMENT_INTEGRATION_BASE_URL:http://localhost:8081}

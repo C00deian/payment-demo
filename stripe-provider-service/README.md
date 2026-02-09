@@ -29,6 +29,11 @@ Set the webhook secret:
 export STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
+If you use multiple webhook sources (e.g. Stripe CLI + Stripe Dashboard), you can provide multiple secrets as a comma-separated list:
+```bash
+export STRIPE_WEBHOOK_SECRET="whsec_cli...,whsec_dashboard..."
+```
+
 ## Config
 
 `stripe-provider-service/src/main/resources/application.yaml`
@@ -36,4 +41,3 @@ export STRIPE_WEBHOOK_SECRET=whsec_...
 - `stripe.webhook.secret` → set via `STRIPE_WEBHOOK_SECRET`
 - `payment.integration.base-url` → defaults to `http://localhost:8081`
 - `internal.api.key` → shared internal key (`INTERNAL_API_KEY`)
-

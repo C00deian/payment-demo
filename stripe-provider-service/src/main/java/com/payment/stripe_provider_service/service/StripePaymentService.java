@@ -17,6 +17,9 @@ public class StripePaymentService {
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
+    @Value("${payments.ui.base-url:${PAYMENTS_UI_BASE_URL:http://localhost:5173}}")
+    private String uiBaseUrl;
+
     public StripePaymentResponse create(StripeCreatePaymentRequest req) {
 
         try {
@@ -25,8 +28,11 @@ public class StripePaymentService {
             }
             Stripe.apiKey = stripeSecretKey;
 
-            String successUrl = firstNonBlank(req.getSuccessUrl(), "http://localhost:5173/success");
-            String cancelUrl = firstNonBlank(req.getFailureUrl(), "http://localhost:5173/cancel");
+            String base = firstNonBlank(uiBaseUrl, "http://localhost:5173");
+            base = trimTrailingSlash(base);
+
+            String successUrl = firstNonBlank(req.getSuccessUrl(), base + "/success");
+            String cancelUrl = firstNonBlank(req.getFailureUrl(), base + "/cancel");
 
             String paymentId = req.getPaymentId();
             successUrl = appendQueryParam(successUrl, "paymentId", paymentId);
@@ -100,5 +106,14 @@ public class StripePaymentService {
 
         String separator = url.contains("?") ? "&" : "?";
         return url + separator + key + "=" + encodedValue;
+    }
+
+    private static String trimTrailingSlash(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 }

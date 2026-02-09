@@ -1,4 +1,22 @@
 services:
+  # React UI (Static Site)
+  - type: web
+    name: payments-demo-ui
+    env: static
+    rootDir: payments-demo
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_MERCHANT_BASE_URL
+        value: https://merchant-service-5zv6.onrender.com
+      - key: VITE_INTEGRATION_BASE_URL
+        value: https://payment-integration-service.onrender.com
+
   # Merchant Service
   - type: web
     name: merchant-service
@@ -11,6 +29,8 @@ services:
     envVars:
       - key: PAYMENT_INTEGRATION_BASE_URL
         sync: false
+      - key: CORS_ALLOWED_ORIGIN_PATTERNS
+        value: https://*.onrender.com,http://localhost:5173,http://localhost:3000
 
   # Payment Integration Service (ONLY service that needs DB)
   # Provide Postgres via Render (DATABASE_URL) or set SPRING_DATASOURCE_* manually.
@@ -31,6 +51,8 @@ services:
         sync: false
       - key: INTERNAL_API_KEY
         sync: false
+      - key: CORS_ALLOWED_ORIGIN_PATTERNS
+        value: https://*.onrender.com,http://localhost:5173,http://localhost:3000
 
   # Stripe Provider Service (NO DB)
   - type: web
@@ -50,6 +72,8 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      - key: PAYMENTS_UI_BASE_URL
+        value: https://payments-demo-ui.onrender.com
 
 databases:
   - name: payment-db

@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Service
 public class StripeWebhookService {
@@ -30,12 +32,40 @@ public class StripeWebhookService {
         this.objectMapper = objectMapper;
     }
 
+    @PostConstruct
+    void logWebhookSecretConfigured() {
+        boolean configured = webhookSecret != null && !webhookSecret.trim().isEmpty();
+        long secretsCount = configured
+                ? Arrays.stream(webhookSecret.split(",")).map(String::trim).filter(s -> !s.isEmpty()).count()
+                : 0;
+        log.info("Stripe webhook secret configured={}, secretsCount={}", configured, secretsCount);
+    }
+
     public void process(String payload, String signature)
             throws SignatureVerificationException {
 
-        Event event = Webhook.constructEvent(
-                payload, signature, webhookSecret
-        );
+        if (webhookSecret == null || webhookSecret.trim().isEmpty()) {
+            throw new IllegalStateException("Missing Stripe webhook secret (set STRIPE_WEBHOOK_SECRET)");
+        }
+
+        Event event = null;
+        SignatureVerificationException last = null;
+        for (String secret : webhookSecret.split(",")) {
+            String trimmed = secret == null ? "" : secret.trim();
+            if (trimmed.isEmpty()) continue;
+            try {
+                event = Webhook.constructEvent(payload, signature, trimmed);
+                last = null;
+                break;
+            } catch (SignatureVerificationException e) {
+                last = e;
+            }
+        }
+        if (event == null) {
+            log.warn("Stripe webhook rejected: invalid signature");
+            if (last != null) throw last;
+            throw new SignatureVerificationException("Invalid webhook signature", signature);
+        }
 
         String type = event.getType();
         String eventId = event.getId();
